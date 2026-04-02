@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
 import { setCookie } from "h3";
+import { Role } from "~/generated/prisma/enums";
 import { generateRefreshToken, generateToken } from "~~/server/utils/token";
 
 export default defineEventHandler(async (event) => {
@@ -16,7 +17,10 @@ export default defineEventHandler(async (event) => {
 
     if (!user) {
       setResponseStatus(event, 401);
-      return { message: "Email atau Password salah." };
+      return sendError(
+        event,
+        createError({ statusCode: 401, message: "Email atau Password salah." }),
+      );
     }
 
     // cek password
@@ -24,7 +28,10 @@ export default defineEventHandler(async (event) => {
 
     if (!isMatch) {
       setResponseStatus(event, 401);
-      return { message: "Email atau Password salah." };
+      return sendError(
+        event,
+        createError({ statusCode: 401, message: "Email atau Password salah." }),
+      );
     }
 
     // buat token
@@ -64,14 +71,16 @@ export default defineEventHandler(async (event) => {
         id: user.id,
         name: user.name,
         email: user.email,
+        role: user.role,
       },
       token: accessToken,
     };
   } catch (error) {
     console.log(error);
     setResponseStatus(event, 500);
-    return {
-      message: "Terjadi kesalahan server.",
-    };
+    return sendError(
+      event,
+      createError({ statusCode: 500, message: "terjadi kesalahan server" }),
+    );
   }
 });

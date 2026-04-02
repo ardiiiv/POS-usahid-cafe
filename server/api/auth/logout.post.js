@@ -20,6 +20,6 @@ export default defineEventHandler(async (event) => {
     console.log(error);
     deleteCookie(event, "refreshToken");
     setResponseStatus(event, 500);
-    return { message: "terjadi kesalahan server." };
+    return sendError(event, createError({statusCode: 500, message: "terjadi kesalahan server."}))
   }
 });
