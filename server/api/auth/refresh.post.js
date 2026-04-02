@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
 
     if (!refreshToken) {
       setResponseStatus(event, 401);
-      return { message: "Unauthorized" };
+      return sendError(event, createError({statusCode: 401, message: "Unauthorized"}))
     }
 
     const tokenInDb = await prisma.refreshToken.findUnique({
@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
     if (!tokenInDb) {
       deleteCookie(event, "refreshToken");
       setResponseStatus(event, 401);
-      return { message: "Invalid token" };
+      return sendError(event, createError({statusCode: 401, message: "Invalid token"}))
     }
 
     if (tokenInDb.expiresAt < new Date()) {
@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
       deleteCookie(event, "refreshToken");
 
       setResponseStatus(event, 401);
-      return { message: "Refresh token expired" };
+      return sendError(event, createError({statusCode: 401, message: "Refresh token expired"}))
     }
 
     const newAccessToken = generateToken(tokenInDb.user);
@@ -39,6 +39,6 @@ export default defineEventHandler(async (event) => {
   } catch (error) {
     console.log(error);
     setResponseStatus(event, 500);
-    return { message: "Terjadi kesalahan server" };
+    return sendError(event, createError({statusCode: 500, message: "terjadi kesalahan server"}))
   }
 });
