@@ -24,6 +24,7 @@ model User {
   email         String         @unique
   password      String
   role          Role           @default(Karyawan)
+  sessionId     String?
   orders        Order[]
   refreshTokens RefreshToken[]
   createdAt     DateTime       @default(now())
@@ -55,6 +56,7 @@ model Product {
   price       Decimal     @db.Decimal(10, 2)
   stock       Int         @default(0)
   imageUrl    String?
+  barcode     String?
   categoryId  String
   category    Category    @relation(fields: [categoryId], references: [id])
   orderItems  OrderItem[]
@@ -80,8 +82,9 @@ model Order {
   totalAmount   Decimal       @db.Decimal(10, 2)
   status        OrderStatus   @default(PENDING)
   paymentMethod PaymentMethod @default(CASH)
-  userId        String
-  user          User          @relation(fields: [userId], references: [id])
+  userId        String?
+  user          User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userName      String
   items         OrderItem[]
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
@@ -91,8 +94,9 @@ model OrderItem {
   id          String   @id @default(cuid())
   orderId     String
   order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  productId   String
-  product     Product  @relation(fields: [productId], references: [id])
+  productId   String?
+  product     Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productName String
   quantity    Int
   priceAtTime Decimal  @db.Decimal(10, 2)
   createdAt   DateTime @default(now())
