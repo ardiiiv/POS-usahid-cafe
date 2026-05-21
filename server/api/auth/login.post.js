@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 import { setCookie } from "h3";
-import { Role } from "~/generated/prisma/enums";
+import { randomUUID } from "crypto";
 import { generateRefreshToken, generateToken } from "~~/server/utils/token";
 
 export default defineEventHandler(async (event) => {
@@ -34,8 +34,15 @@ export default defineEventHandler(async (event) => {
       );
     }
 
+    const sessionId = randomUUID();
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { sessionId },
+    });
+
     // buat token
-    const accessToken = generateToken(user);
+    const accessToken = generateToken({ ...user, sessionId });
     const refreshToken = generateRefreshToken(user);
 
     // mencegah penumpukan refresh token
